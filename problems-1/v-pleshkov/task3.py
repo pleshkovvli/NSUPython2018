@@ -1,8 +1,10 @@
-from primes import max_possible_divider
-from bitarray import bitarray
+import itertools
+import unittest
+
 from enum import Enum
-from time import time
 from sys import argv
+from bitarray import bitarray
+from primes import max_possible_divider, prime_numbers_fast
 
 
 class Sieve(Enum):
@@ -73,25 +75,62 @@ def _prime_numbers_set(sieve, limit):
     return primes
 
 
-def execution_time(fun):
-    start = time()
-    value = fun()
-    return value, time() - start
+class WrongSieveTypeException(Exception):
+    pass
+
+
+def get_sieve_type(index):
+    sieve_values = [e.value for e in Sieve]
+    try:
+        type_index = int(index)
+        if type_index not in sieve_values:
+            raise WrongSieveTypeException(f"Allowed sieve type indices are: {sieve_values}")
+        return Sieve(type_index)
+    except ValueError:
+        raise WrongSieveTypeException(f"Sieve type should be a number in {sieve_values}")
+
+
+class TestEratosthenesPrimes(unittest.TestCase):
+    def testEdgeCases(self):
+        for sieve_type in Sieve:
+            self.assertEqual(prime_numbers(0, sieve_type), [])
+            self.assertEqual(prime_numbers(1, sieve_type), [])
+            self.assertEqual(prime_numbers(-1, sieve_type), [])
+            self.assertEqual(prime_numbers(-2, sieve_type), [])
+            self.assertEqual(prime_numbers(-231, sieve_type), [])
+
+    def testPrimes(self):
+        for sieve_type in Sieve:
+            self._testPrimes(3342, sieve_type)
+            self._testPrimes(5232, sieve_type)
+            self._testPrimes(92313, sieve_type)
+            self._testPrimes(2213, sieve_type)
+            self._testPrimes(4121, sieve_type)
+
+    def _testPrimes(self, limit, sieve_type):
+        primes = prime_numbers(limit, sieve_type)
+        self.assertEqual(primes, [n for n in itertools.islice(prime_numbers_fast(), len(primes))])
 
 
 def main():
     if len(argv) < 2:
-        print(f"Usage: python3 {__file__} LIMIT [TYPE=0,1,2]")
+        unittest.main()
         return
 
-    if len(argv) >=3:
-        sieve_type = Sieve(int(argv[2]))
+    if len(argv) >= 3:
+        try:
+            sieve_type = get_sieve_type(argv[2])
+        except WrongSieveTypeException as e:
+            print(str(e))
+            return
     else:
         sieve_type = Sieve.LIST
 
-    primes, exec_time = execution_time(lambda : prime_numbers(int(argv[1]), sieve_type))
-    print(primes)
-    print(exec_time)
+    try:
+        limit = int(argv[1])
+        print(prime_numbers(limit, sieve_type))
+    except ValueError:
+        print("Integer number expected as limit")
 
 
 if __name__ == "__main__":

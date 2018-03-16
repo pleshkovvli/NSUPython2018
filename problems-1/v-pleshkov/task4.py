@@ -8,25 +8,29 @@ def main():
         print(f"Usage: python3 {argv[0]} DIRECTORY")
         return
 
-    current_path = argv[1]
+    path_name = argv[1]
 
     try:
-        files_names = listdir(current_path)
+        files = get_files_sizes_and_names(path_name)
+        files.sort(key = lambda size_with_name: (-size_with_name[0], size_with_name[1]))
+
+        for file in files:
+            print(f"{file[1]}: {file[0]} bytes")
+
     except OSError as e:
         print(f"Failed to read directory: {e.strerror}")
         return
 
+
+def get_files_sizes_and_names(path_name):
+    files_names = listdir(path_name)
     files = []
     for name in files_names:
-        path = join(current_path, name)
-        if isfile(path):
-            size = stat(path).st_size
+        current_path = join(path_name, name)
+        if isfile(current_path):
+            size = stat(current_path).st_size
             files.append((size, name))
-
-    files.sort(key = lambda size_with_name: (-size_with_name[0], size_with_name[1]))
-
-    for file in files:
-        print(f"{file[1]}: {file[0]} bytes")
+    return files
 
 
 if __name__ == "__main__":

@@ -9,20 +9,24 @@ def main():
         return
 
     current_path = argv[1]
-    files_names = listdir(current_path)
+
+    try:
+        files_names = listdir(current_path)
+    except OSError as e:
+        print(f"Failed to read directory: {e.strerror}")
+        return
 
     files = []
     for name in files_names:
         path = join(current_path, name)
         if isfile(path):
             size = stat(path).st_size
-            files.append((name, size))
+            files.append((size, name))
 
-    files.sort(key = lambda filesize: filesize[0])
-    files.sort(key = lambda filesize: filesize[1], reverse=True)
+    files.sort(key = lambda size_with_name: (-size_with_name[0], size_with_name[1]))
 
     for file in files:
-        print(f"{file[0]}: {file[1]} bytes")
+        print(f"{file[1]}: {file[0]} bytes")
 
 
 if __name__ == "__main__":

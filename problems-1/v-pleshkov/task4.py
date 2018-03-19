@@ -1,6 +1,6 @@
 from os import listdir, stat
 from os.path import join, isfile
-from sys import argv
+from sys import argv, stderr
 
 
 def main():
@@ -18,7 +18,7 @@ def main():
             print(f"{file[1]}: {file[0]} bytes")
 
     except OSError as e:
-        print(f"Failed to read directory: {e.strerror}")
+        print(f"Failed to read directory: {e.strerror}", file=stderr)
         return
 
 

@@ -1,41 +1,51 @@
+import codecs
+
 from sys import argv
-
 from math import sqrt
-
 from task4 import get_counts, get_frequencies
 
 
 def main():
-    counts = get_counts(argv[1])
+    filename = argv[1]
+    counts = get_counts(filename)
     frequencies = get_frequencies(counts)
 
-    encodings = encodings_frequencies(_default_encodings(), _default_frequencies())
+    encoding_frequencies = encodings_frequencies(_default_encodings(), _default_frequencies())
 
-    # for encoding in encodings:
-    #     print(encoding[0])
-    #     for key, value in encoding[1].items():
-    #         print(f"{list(key)[0]} {value}")
+    differences = [(encoding[0], distance(frequencies, encoding[1])) for encoding in encoding_frequencies]
+    encoding_name = min(differences, key= lambda x: x[1])[0]
 
-    differences = [(distance(frequencies, encoding[1]), encoding[0]) for encoding in encodings]
-    differences.sort(key=lambda x: x[0])
+    print(f"I guess, encoding is {encoding_name}")
+    answer = input("Print file? y/n ")
+    if answer == "y":
+        print_encoded_file(encoding_name, filename)
 
-    print(differences[0][1])
+
+def print_encoded_file(encoding_name, filename):
+    with codecs.open(filename, "r", encoding_name) as file:
+        buf_size = 1024 * 1024
+        while True:
+            read_bytes = file.read(buf_size)
+            if len(read_bytes) == 0:
+                break
+            print(read_bytes)
 
 
 def distance(frequencies, encoding):
-    dis = 0
+    current_distance = 0
     for byte, frequency in frequencies:
-        if(byte in encoding.keys()):
-            cur_byte = encoding[byte]
+        if byte in encoding.keys():
+            encoding_byte = encoding[byte]
         else:
             continue
-        code_distance = abs(cur_byte - frequency)
-        dis += code_distance * code_distance
-    return sqrt(dis)
+        code_distance = abs(encoding_byte - frequency)
+        current_distance += code_distance * code_distance
+    return sqrt(current_distance)
 
 
 def encodings_frequencies(encodings, frequencies):
-    return [(encoding, dict((list(letter.encode(encoding))[0], frequency) for low_letter, frequency in frequencies.items()
+    return [(encoding, dict((list(letter.encode(encoding))[0], frequency)
+                            for low_letter, frequency in frequencies.items()
                             for letter in (low_letter))) for encoding in encodings]
 
 

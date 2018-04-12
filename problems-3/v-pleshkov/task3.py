@@ -11,7 +11,8 @@ def read_lazy(file, chunk_size=512):
         empty = ""
 
     for chunk in iter(lambda: file.read(chunk_size), empty):
-        yield chunk
+        for symbol in chunk:
+            yield symbol
 
 
 class TestLazyReading(unittest.TestCase):
@@ -32,10 +33,9 @@ class TestLazyReading(unittest.TestCase):
     def _assert_same_content(self, all_content, file):
         chunk_size = 512
         count = 0
-        for chunk in read_lazy(file, chunk_size):
-            length = len(chunk)
-            self.assertEqual(chunk, all_content[count:(count + length)])
-            count += length
+        for symbol in read_lazy(file, chunk_size):
+            self.assertEqual(symbol, all_content[count])
+            count += 1
 
 
 if __name__ == "__main__":

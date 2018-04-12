@@ -1,22 +1,62 @@
 import unittest
-from itertools import islice
+from functools import reduce
 from numbers import Number
+
+number_types = (complex, float, int)
+
+
+def _most_complicated_type(one_type, other_type):
+    for index, cur_type in enumerate(number_types):
+        if one_type is cur_type or other_type is cur_type:
+            for more_complex in reversed(number_types[0:index]):
+                try:
+                    more_complex(one_type), more_complex(other_type)
+                    return more_complex
+                except TypeError:
+                    pass
+
+            raise TypeError
+
+    for more_complex in reversed(number_types):
+        more_complex(one_type), more_complex(other_type)
+        return more_complex
+
+    raise TypeError
+
+
+class NotIterableException(TypeError):
+    pass
 
 
 class Vector(object):
     """Class representing linear algebra vector"""
-    def __init__(self, iterable, length=0):
+    def __init__(self, *initializer):
         """
         Create vector from given iterable
-        :param iterable: iterable to fill vector
-        :param length: length of vector, if = 0, then vector length would be same as iterable length
+        :param initializer: iterable or array of scalar values to fill vector
         """
-        if length == 0:
-            self._vector = list(iterable)
-        elif length < 0:
-            raise IllegalLengthException(length)
-        else:
-            self._vector = list(islice(iterable, length))
+        try:
+            vector = self._vector_from_iterable(initializer[0])
+        except NotIterableException:
+            vector = self._vector_from_array(initializer)
+
+        comp_type = reduce(
+            lambda acc, cur_type: _most_complicated_type(acc, cur_type),
+            map(lambda x: type(x), vector)
+        )
+
+        self._vector = [comp_type(x) for x in vector]
+
+
+    def _vector_from_array(self, *array):
+        return [x for x in array]
+
+
+    def _vector_from_iterable(self, iterable):
+        try:
+            return list(iterable)
+        except TypeError:
+            raise NotIterableException
 
     def __len__(self):
         """Returns length of vector"""
@@ -86,6 +126,7 @@ class DifferentLengthsException(Exception):
     def __init__(self, *lengths):
         self.message = f"One length = {lengths[0]}, other length = {lengths[1]}"
 
+
 class IllegalLengthException(Exception):
     def __init__(self, length):
         self.message = f"Length should be more than zero: actual={length}"
@@ -93,7 +134,7 @@ class IllegalLengthException(Exception):
 
 class TestVector(unittest.TestCase):
     def test_init(self):
-        self.assertEqual(Vector([0, 1, 3, 5, 6]), Vector([0, 1, 3, 5, 6, 8, 9], 5))
+        self.assertEqual(Vector([0, 1, 3, 5, 6]), Vector(0, 1, 3, 5, 6))
 
         def zeros():
             while True:

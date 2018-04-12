@@ -108,9 +108,7 @@ class Vector(object):
                  Number: multiplication of vector and constant
         """
         if type(other) in Vector._number_types:
-            vector = [x for x in map(lambda x: x * other, self._vector)]
-            comp_type = self._get_type(vector)
-            return Vector([x for x in map(comp_type, vector)])
+            return Vector(map(lambda x: x * other, self._vector))
         elif isinstance(other, Vector):
             self._check_length(other)
             return sum(self._map_vector(lambda x: x[0] * x[1], other))

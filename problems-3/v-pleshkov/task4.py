@@ -52,7 +52,7 @@ class Vector(object):
             except ValueError:
                 pass
 
-        raise TypeError
+        raise Vector.NotANumericTypeException(one, other)
 
     def _check_length(self, other):
         if len(self) != len(other):
@@ -113,7 +113,7 @@ class Vector(object):
             self._check_length(other)
             return sum(self._map_vector(lambda x: x[0] * x[1], other))
         else:
-            raise TypeError
+            raise TypeError(f"${other} is not scalar and neither vector")
 
     def __rmul__(self, other):
         """Multiplication for argument on other side of vector"""
@@ -121,7 +121,6 @@ class Vector(object):
 
     def __str__(self):
         return "Vector(" + str(self._vector)[1:-1] + ")"
-
 
 
 class DifferentLengthsException(Exception):

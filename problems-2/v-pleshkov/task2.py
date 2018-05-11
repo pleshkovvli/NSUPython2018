@@ -18,6 +18,9 @@ class Vector(object):
         else:
             self._vector = list(islice(iterable, length))
 
+    def _map_vector(self, fun, other):
+        return map(fun, zip(self._vector, other._vector))
+
     def __len__(self):
         """Returns length of vector"""
         return len(self._vector)
@@ -28,10 +31,12 @@ class Vector(object):
 
     def __eq__(self, other):
         """Checks two vectors on equality"""
+        if not isinstance(other, Vector):
+            return False
         if len(self) != len(other):
             return False
 
-        return all(self[i] == other[i] for i in range(0, len(self)))
+        return all(self._map_vector(lambda x: x[0] == x[1], other))
 
     def __ne__(self, other):
         """Checks two vectors on non-equality"""
@@ -44,9 +49,7 @@ class Vector(object):
         :return: Vector: sum of two vectors
         """
         self._check_length(other)
-        length = len(self)
-
-        return Vector(self[i] + other[i] for i in range(0, length))
+        return Vector([x for x in self._map_vector(lambda x: x[0] + x[1], other)])
 
     def __sub__(self, other):
         """Returns vector, representing substraction of current and other vector
@@ -57,7 +60,7 @@ class Vector(object):
         length = len(self)
         self._check_length(other)
 
-        return Vector(self[i] - other[i] for i in range(0, length))
+        return Vector([x for x in self._map_vector(lambda x: x[0] - x[1], other)])
 
     def __mul__(self, other):
         """Scalar multiplication, if other is vector, or constant, if other is number
@@ -67,10 +70,10 @@ class Vector(object):
         """
         length = len(self)
         if isinstance(other, Number):
-            return Vector(self[i] * other for i in range(0, length))
+            return Vector(map(lambda x: x * other, self._vector))
         else:
             self._check_length(other)
-            return sum(self[i] * other[i] for i in range(0, length))
+            return sum(self._map_vector(lambda x: x[0] * x[1], other))
 
     def __rmul__(self, other):
         """Multiplication for argument on other side of vector"""

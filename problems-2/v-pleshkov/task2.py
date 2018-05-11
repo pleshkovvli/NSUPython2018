@@ -57,7 +57,6 @@ class Vector(object):
         :param other: vector to subtract from current vector
         :return: Vector: subtraction of two vectors
         """
-        length = len(self)
         self._check_length(other)
 
         return Vector([x for x in self._map_vector(lambda x: x[0] - x[1], other)])
@@ -68,7 +67,6 @@ class Vector(object):
         :return: Vector: multiplication of two vectors
                  Number: multiplication of vector and constant
         """
-        length = len(self)
         if isinstance(other, Number):
             return Vector(map(lambda x: x * other, self._vector))
         else:
@@ -91,6 +89,7 @@ class DifferentLengthsException(Exception):
     def __init__(self, *lengths):
         self.message = f"One length = {lengths[0]}, other length = {lengths[1]}"
 
+
 class IllegalLengthException(Exception):
     def __init__(self, length):
         self.message = f"Length should be more than zero: actual={length}"
@@ -103,7 +102,7 @@ class TestVector(unittest.TestCase):
         def zeros():
             while True:
                 yield 0
-        self.assertEqual(Vector([0 ,0, 0, 0, 0]), Vector(zeros(), 5))
+        self.assertEqual(Vector([0, 0, 0, 0, 0]), Vector(zeros(), 5))
         with self.assertRaises(IllegalLengthException):
             Vector([1, 2], -1)
 
